@@ -16,6 +16,8 @@ func TestVariableDefinition(t *testing.T) {
 		for _, line := range errorPretty {
 			t.Error(line)
 		}
+
+		t.Fatal()
 	}
 
 	tokensExpected := []Token{
@@ -28,5 +30,45 @@ func TestVariableDefinition(t *testing.T) {
 
 	if !reflect.DeepEqual(tokensExpected, tokens) {
 		t.Errorf("Expected %+v but got %+v", tokensExpected, tokens)
+	}
+}
+
+func TestVariableDefinition_UnknownTokenError(t *testing.T) {
+	code := "var xx != 1"
+	codeLines := strings.Split(code, "\n")
+	_, err := tokenizer(codeLines)
+
+	if err == nil {
+		t.Fatalf("Expected an error but got nil")
+	}
+
+	expectedError := TokenError{
+		Err:    "not expected token received",
+		Line:   1,
+		Column: 8,
+	}
+
+	if !reflect.DeepEqual(&expectedError, err) {
+		t.Errorf("Expected %+v but got %+v", expectedError, err)
+	}
+}
+
+func TestVariableDefinition_UnknownTokenErrorFormatted(t *testing.T) {
+	code := "var xx != 1"
+	codeLines := strings.Split(code, "\n")
+	_, err := tokenizer(codeLines)
+
+	if err == nil {
+		t.Fatalf("Expected an error but got nil")
+	}
+
+	errorLines := tokenizationErrorFormatter(code, *err)
+	errorLinesExpected := []string{
+		"var xx != 1",
+		ColorRed + "       ^ syntax error (line 1, column 8): not expected token received" + ColorReset,
+	}
+
+	if !reflect.DeepEqual(errorLinesExpected, errorLines) {
+		t.Errorf("Expected %+v but got %+v", errorLinesExpected, errorLines)
 	}
 }

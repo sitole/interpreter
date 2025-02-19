@@ -7,13 +7,17 @@ import (
 	"strings"
 )
 
+var (
+	ColorRed   = "\033[31m"
+	ColorReset = "\033[0m"
+)
+
 func tokenizationErrorFormatter(code string, err TokenError) []string {
 	codeLines := strings.Split(code, "\n")
 
-	errorRedColor := "\033[31m"
 	errorLine := codeLines[err.Line-1]
 	errorSpaces := strings.Repeat(" ", err.Column-1)
-	errorMessage := fmt.Sprintf(errorRedColor+"%s^ syntax error (line %d, column %d): %s", errorSpaces, err.Line, err.Column, err.Err)
+	errorMessage := fmt.Sprintf(ColorRed+"%s^ syntax error (line %d, column %d): %s"+ColorReset, errorSpaces, err.Line, err.Column, err.Err)
 
 	return []string{errorLine, errorMessage}
 }
