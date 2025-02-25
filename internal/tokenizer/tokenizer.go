@@ -36,7 +36,7 @@ type Token struct {
 	Literal interface{} // value for strings, numbers etc
 }
 
-func tokenizer(lines []string) ([]Token, *TokenError) {
+func Tokenizer(lines []string) ([]Token, *TokenError) {
 	tokens := make([]Token, 0)
 
 	for lineIndex, line := range lines {
@@ -70,6 +70,15 @@ func tokenizer(lines []string) ([]Token, *TokenError) {
 					tokens,
 					Token{
 						Type:   TOKEN_VARIABLE_ASSIGN,
+						Line:   lineNum,
+						Column: columnNum,
+					},
+				)
+			} else if c == "+" {
+				tokens = append(
+					tokens,
+					Token{
+						Type:   TOKEN_MATH_PLUS,
 						Line:   lineNum,
 						Column: columnNum,
 					},
@@ -123,19 +132,10 @@ func tokenizer(lines []string) ([]Token, *TokenError) {
 				// Number literal
 				// ---
 			} else if isInteger(c) {
-				last, err := lastToken(tokens)
+				_, err := lastToken(tokens)
 				if err != nil {
 					return nil, &TokenError{
 						Err:    fmt.Sprintf("expecting prevoius token, got nothing"),
-						Line:   lineNum,
-						Column: columnNum,
-					}
-				}
-
-				// todo: this will need to be extended to function calls etc.
-				if last.Type != TOKEN_VARIABLE_ASSIGN {
-					return nil, &TokenError{
-						Err:    fmt.Sprintf("expecting variable assign token, got: %s", last.Type),
 						Line:   lineNum,
 						Column: columnNum,
 					}
@@ -190,7 +190,7 @@ func tokenizer(lines []string) ([]Token, *TokenError) {
 					}
 				}
 
-				if last.Type == TOKEN_VARIABLE_DEFINITION {
+				if last.Type == TOKEN_VARIABLE_DEFINITION || last.Type == TOKEN_VARIABLE_ASSIGN {
 					variableNameDefEnd := firstNonAlphabetIndex(string(lineRunes[i:]))
 					if variableNameDefEnd == -1 {
 						return nil, &TokenError{
