@@ -12,7 +12,7 @@ func TestVariableDefinition(t *testing.T) {
 
 	tokens, err := Tokenizer(codeLines)
 	if err != nil {
-		errorPretty := tokenizationErrorFormatter(code, *err)
+		errorPretty := ErrorFormatter(code, *err)
 		for _, line := range errorPretty {
 			t.Error(line)
 		}
@@ -38,7 +38,7 @@ func TestMultipleVariablesDefinition(t *testing.T) {
 
 	tokens, err := Tokenizer(strings.Split(code, "\n"))
 	if err != nil {
-		errorPretty := tokenizationErrorFormatter(code, *err)
+		errorPretty := ErrorFormatter(code, *err)
 		for _, line := range errorPretty {
 			t.Error(line)
 		}
@@ -98,7 +98,7 @@ func TestVariableDefinition_UnknownTokenErrorFormatted(t *testing.T) {
 		t.Fatalf("Expected an error but got nil")
 	}
 
-	errorLines := tokenizationErrorFormatter(code, *err)
+	errorLines := ErrorFormatter(code, *err)
 	errorLinesExpected := []string{
 		"var xx != 1",
 		ColorRed + "       ^ syntax error (line 1, column 8): not expected token received" + ColorReset,

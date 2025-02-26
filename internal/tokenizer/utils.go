@@ -12,7 +12,7 @@ var (
 	ColorReset = "\033[0m"
 )
 
-func tokenizationErrorFormatter(code string, err TokenError) []string {
+func ErrorFormatter(code string, err TokenError) []string {
 	codeLines := strings.Split(code, "\n")
 
 	errorLine := codeLines[err.Line-1]

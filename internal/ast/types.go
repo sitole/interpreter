@@ -15,18 +15,7 @@ type Context interface {
 
 type Node interface {
 	Visitor(ctx Context)
-}
-
-type StatementNode struct {
-	Node
-	Type string
-}
-
-type ExpressionNode struct {
-	Node
-	Type  string
-	Left  *Node
-	Right *Node
+	Position() (int, int)
 }
 
 // todo
@@ -40,6 +29,9 @@ var (
 )
 
 type MathExpression struct {
+	PositionLine   int
+	PositionColumn int
+
 	Operation string
 	Left      Node
 	Right     Node
@@ -64,7 +56,13 @@ func (m MathExpression) Visitor(ctx Context) {
 		mathResult = leftLiteral * rightLiteral
 	} else if m.Operation == MATH_OPERATION_DIV {
 		if rightLiteral == 0 {
-			ctx.SetError(ContextError{Message: "Division by zero"})
+			ctx.SetError(
+				ContextError{
+					Message: "Division by zero",
+					Line:    m.PositionLine,
+					Column:  m.PositionColumn,
+				},
+			)
 		}
 
 		mathResult = leftLiteral / rightLiteral
@@ -75,12 +73,19 @@ func (m MathExpression) Visitor(ctx Context) {
 	ctx.SetVariableValue(RESULT_REGISTER, mathResult)
 }
 
+func (m MathExpression) Position() (int, int) {
+	return m.PositionLine, m.PositionColumn
+}
+
 var (
 	VARIABLE_INT    = "VARIABLE_INT"
 	VARIABLE_STRING = "VARIABLE_STRING"
 )
 
 type LiteralDefinition struct {
+	PositionLine   int
+	PositionColumn int
+
 	Type  string
 	Value interface{}
 }
@@ -89,7 +94,14 @@ func (l LiteralDefinition) Visitor(ctx Context) {
 	ctx.SetVariableValue(RESULT_REGISTER, l.Value)
 }
 
+func (l LiteralDefinition) Position() (int, int) {
+	return l.PositionLine, l.PositionColumn
+}
+
 type VariableDefinition struct {
+	PositionLine   int
+	PositionColumn int
+
 	Identifier string
 	ValueType  string
 	Value      Node
@@ -106,8 +118,8 @@ func (v VariableDefinition) Visitor(ctx Context) {
 	ctx.SetVariableValue(v.Identifier, variableValue)
 }
 
-func (sn StatementNode) Visitor() int {
-	return 10
+func (v VariableDefinition) Position() (int, int) {
+	return v.PositionLine, v.PositionColumn
 }
 
 type Program struct {
